@@ -30,9 +30,9 @@ export default function MessageList({ messages, isLoading }: MessageListProps) {
 
   return (
     <ScrollArea className="flex-1 pr-4">
-      <div className="space-y-4">
+      <div className="flex flex-col justify-end space-y-4">
         <AnimatePresence initial={false}>
-          {messages.map((message) => (
+          {[...messages].reverse().map((message) => (
             <motion.div
               key={message.id}
               initial={{ opacity: 0, y: 20 }}
