@@ -47,6 +47,21 @@ function analyzeEmotion(text: string): string {
   return "neutral";
 }
 
+function extractAssistantProperty(text: string): { isProperty: boolean; key?: string; value?: string } {
+  const negationRegex = /you are not|your name is not|you're not|you weren't|you weren't made by|you weren't created by/i;
+  const match = text.match(negationRegex);
+  
+  if (match) {
+    const key = text.slice(match.index + match[0].length).trim().toLowerCase();
+    return {
+      isProperty: true,
+      key,
+      value: 'false'
+    };
+  }
+  return { isProperty: false };
+}
+
 function extractMemory(text: string): { isMemory: boolean; key?: string; value?: string } {
   const rememberRegex = /remember\s+(?:that\s+)?(?:my\s+)?(.*?)\s+(?:is|are)\s+(.*?)(?:\.|$)/i;
   const match = text.match(rememberRegex);
@@ -162,8 +177,15 @@ export function registerRoutes(app: Express) {
       return;
     }
 
-    // Process memory if present
+    // Process memory and assistant properties
     const wasMemoryStored = await processMemories(req.session.userId, result.data.content);
+    const property = extractAssistantProperty(result.data.content);
+    if (property.isProperty && property.key && property.value) {
+      await storage.setAssistantProperty({
+        key: property.key,
+        value: property.value
+      });
+    }
 
     // Add emotion analysis to user messages
     const emotion = analyzeEmotion(result.data.content);

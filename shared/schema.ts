@@ -59,5 +59,19 @@ export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Memory = typeof memories.$inferSelect;
 export type InsertMemory = z.infer<typeof insertMemorySchema>;
+export const assistantProperties = pgTable("assistant_properties", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull(),
+  value: text("value").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertAssistantPropertySchema = createInsertSchema(assistantProperties).omit({
+  id: true,
+  updatedAt: true
+});
+
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type AssistantProperty = typeof assistantProperties.$inferSelect;
+export type InsertAssistantProperty = z.infer<typeof insertAssistantPropertySchema>;

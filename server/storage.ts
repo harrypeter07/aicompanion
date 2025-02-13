@@ -1,4 +1,4 @@
-import { messages, memories, users, type Message, type InsertMessage, type User, type InsertUser, type Memory, type InsertMemory } from "@shared/schema";
+import { messages, memories, users, assistantProperties, type Message, type InsertMessage, type User, type InsertUser, type Memory, type InsertMemory, type AssistantProperty, type InsertAssistantProperty } from "@shared/schema";
 import { db } from "./db";
 import { desc, eq, and } from "drizzle-orm";
 import session from "express-session";
@@ -21,6 +21,12 @@ export interface IStorage {
   getMemories(userId: number): Promise<Memory[]>;
   createMemory(memory: InsertMemory): Promise<Memory>;
   searchMemories(userId: number, key: string): Promise<Memory[]>;
+
+  // Assistant Property methods
+  getAssistantProperty(key: string): Promise<AssistantProperty | undefined>;
+  setAssistantProperty(property: InsertAssistantProperty): Promise<AssistantProperty>;
+  deleteAssistantProperty(key: string): Promise<void>;
+
 
   // Session store
   sessionStore: session.Store;
@@ -103,6 +109,20 @@ export class DatabaseStorage implements IStorage {
           eq(memories.key, key)
         )
       );
+  }
+
+  async getAssistantProperty(key: string): Promise<AssistantProperty | undefined> {
+    const [property] = await db.select().from(assistantProperties).where(eq(assistantProperties.key, key));
+    return property;
+  }
+
+  async setAssistantProperty(property: InsertAssistantProperty): Promise<AssistantProperty> {
+    const [newProperty] = await db.insert(assistantProperties).values(property).returning();
+    return newProperty;
+  }
+
+  async deleteAssistantProperty(key: string): Promise<void> {
+    await db.delete(assistantProperties).where(eq(assistantProperties.key, key));
   }
 }
 
