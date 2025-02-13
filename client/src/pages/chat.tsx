@@ -19,18 +19,19 @@ export default function ChatPage() {
 
   const { mutate: sendMessage, isPending: isSending } = useMutation({
     mutationFn: async (content: string) => {
-      return apiRequest("POST", "/api/messages", {
+      const response = await apiRequest("POST", "/api/messages", {
         content,
         role: "user",
         metadata: {
           isVoice: true, // Enable voice by default
         },
       });
+      const data = await response.json();
+      return data;
     },
-    onSuccess: (response) => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
       // Speak the assistant's response
-      const data = response.json();
       if (data.assistantMessage?.content) {
         speakText(data.assistantMessage.content);
       }
