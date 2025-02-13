@@ -8,10 +8,11 @@ import MessageInput from "@/components/chat/message-input";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { speakText, stopSpeaking } from "@/lib/speech-synthesis";
 
 export default function ChatPage() {
   const { toast } = useToast();
-  
+
   const { data: messages = [], isLoading } = useQuery<Message[]>({
     queryKey: ["/api/messages"],
   });
@@ -21,11 +22,18 @@ export default function ChatPage() {
       return apiRequest("POST", "/api/messages", {
         content,
         role: "user",
-        metadata: {},
+        metadata: {
+          isVoice: true, // Enable voice by default
+        },
       });
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["/api/messages"] });
+      // Speak the assistant's response
+      const data = response.json();
+      if (data.assistantMessage?.content) {
+        speakText(data.assistantMessage.content);
+      }
     },
     onError: () => {
       toast({
@@ -38,6 +46,7 @@ export default function ChatPage() {
 
   const { mutate: clearChat } = useMutation({
     mutationFn: async () => {
+      stopSpeaking(); // Stop any ongoing speech
       return apiRequest("DELETE", "/api/messages");
     },
     onSuccess: () => {
@@ -62,15 +71,15 @@ export default function ChatPage() {
           <Trash2 className="h-5 w-5" />
         </Button>
       </header>
-      
+
       <main className="flex-1 container max-w-4xl mx-auto p-4 flex flex-col">
         <Card className="flex-1 p-4 flex flex-col gap-4 mb-4">
           <MessageList messages={messages} isLoading={isLoading} />
         </Card>
-        
-        <MessageInput 
-          onSend={sendMessage} 
-          disabled={isSending} 
+
+        <MessageInput
+          onSend={sendMessage}
+          disabled={isSending}
         />
       </main>
     </div>

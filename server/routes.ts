@@ -7,6 +7,24 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIzaSyA1ZZChadARut17eYel7BxfYCkpGU7hv4A");
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
+function analyzeEmotion(text: string): string {
+  // Simple emotion analysis based on keywords
+  const emotions = {
+    happy: ["happy", "glad", "joy", "excited", "great"],
+    sad: ["sad", "unhappy", "depressed", "down"],
+    angry: ["angry", "mad", "frustrated", "annoyed"],
+    neutral: ["okay", "fine", "normal"]
+  };
+
+  const lowercaseText = text.toLowerCase();
+  for (const [emotion, keywords] of Object.entries(emotions)) {
+    if (keywords.some(keyword => lowercaseText.includes(keyword))) {
+      return emotion;
+    }
+  }
+  return "neutral";
+}
+
 export function registerRoutes(app: Express) {
   app.get("/api/messages", async (_req, res) => {
     const messages = await storage.getMessages();
@@ -20,7 +38,19 @@ export function registerRoutes(app: Express) {
       return;
     }
 
-    const userMessage = await storage.createMessage(result.data);
+    // Add emotion analysis to user messages
+    const emotion = analyzeEmotion(result.data.content);
+    const userMessage = await storage.createMessage({
+      ...result.data,
+      metadata: {
+        ...result.data.metadata,
+        emotion,
+      },
+      context: {
+        emotionalState: emotion,
+        previousTopics: [], // This could be populated by analyzing message content
+      },
+    });
 
     try {
       // Get previous messages and format them for the chat
@@ -42,7 +72,13 @@ export function registerRoutes(app: Express) {
       const assistantMessage = await storage.createMessage({
         content: responseText,
         role: "assistant",
-        metadata: {},
+        metadata: {
+          isVoice: result.data.metadata?.isVoice || false,
+        },
+        context: {
+          emotionalState: emotion, // Mirror user's emotional state
+          previousTopics: [], // Could be populated by analyzing conversation
+        },
       });
 
       res.json({

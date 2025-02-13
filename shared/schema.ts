@@ -10,6 +10,15 @@ export const messages = pgTable("messages", {
   metadata: jsonb("metadata").$type<{
     isVoice?: boolean;
     duration?: number;
+    emotion?: string;
+    contextTags?: string[];
+    audioUrl?: string;
+  }>(),
+  context: jsonb("context").$type<{
+    userName?: string;
+    userPreferences?: Record<string, unknown>;
+    emotionalState?: string;
+    previousTopics?: string[];
   }>(),
 });
 
@@ -18,6 +27,7 @@ export const insertMessageSchema = createInsertSchema(messages)
     content: true,
     role: true,
     metadata: true,
+    context: true,
   });
 
 export type Message = typeof messages.$inferSelect;
