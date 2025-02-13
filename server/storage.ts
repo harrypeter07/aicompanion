@@ -43,24 +43,24 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(messages.timestamp));
   }
 
-  async createMessage(insertMessage: InsertMessage): Promise<Message> {
-    const [message] = await db
+  async createMessage(message: InsertMessage): Promise<Message> {
+    const [newMessage] = await db
       .insert(messages)
-      .values(insertMessage)
+      .values(message)
       .returning();
-    return message;
+    return newMessage;
   }
 
   async clearMessages(userId: number): Promise<void> {
     await db.delete(messages).where(eq(messages.userId, userId));
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db
       .insert(users)
-      .values(insertUser)
+      .values(user)
       .returning();
-    return user;
+    return newUser;
   }
 
   async getUserById(id: number): Promise<User | undefined> {
@@ -86,12 +86,12 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(memories.createdAt));
   }
 
-  async createMemory(insertMemory: InsertMemory): Promise<Memory> {
-    const [memory] = await db
+  async createMemory(memory: InsertMemory): Promise<Memory> {
+    const [newMemory] = await db
       .insert(memories)
-      .values(insertMemory)
+      .values(memory)
       .returning();
-    return memory;
+    return newMemory;
   }
 
   async searchMemories(userId: number, key: string): Promise<Memory[]> {
