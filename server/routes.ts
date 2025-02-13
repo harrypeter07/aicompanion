@@ -23,16 +23,20 @@ export function registerRoutes(app: Express) {
     const userMessage = await storage.createMessage(result.data);
 
     try {
+      // Get previous messages and format them for the chat
+      const previousMessages = await storage.getMessages();
+      const history = previousMessages
+        .reverse() // Get messages in chronological order
+        .map(msg => ({
+          role: msg.role === "user" ? "user" : "model",
+          parts: [{ text: msg.content }],
+        }));
+
       const chat = model.startChat({
-        history: (await storage.getMessages())
-          .reverse() // Get messages in chronological order
-          .map(msg => ({
-            role: msg.role === "user" ? "user" : "model",
-            parts: msg.content,
-          })),
+        history,
       });
 
-      const response = await chat.sendMessage(userMessage.content);
+      const response = await chat.sendMessage([{ text: userMessage.content }]);
       const responseText = await response.response.text();
 
       const assistantMessage = await storage.createMessage({
