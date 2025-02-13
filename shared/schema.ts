@@ -17,10 +17,9 @@ export const memories = pgTable("memories", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Allow null user_id initially
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
-  userId: serial("user_id").references(() => users.id),  // Remove .notNull()
+  userId: serial("user_id").references(() => users.id),
   content: text("content").notNull(),
   role: text("role", { enum: ["user", "assistant"] }).notNull(),
   timestamp: timestamp("timestamp").defaultNow().notNull(),
@@ -51,14 +50,10 @@ export const insertMemorySchema = createInsertSchema(memories).omit({
   createdAt: true
 });
 
-export const insertMessageSchema = createInsertSchema(messages)
-  .pick({
-    content: true,
-    role: true,
-    metadata: true,
-    context: true,
-    userId: true,
-  });
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  timestamp: true
+});
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
