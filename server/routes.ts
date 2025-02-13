@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { insertMessageSchema } from "@shared/schema";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "AIzaSyA1ZZChadARut17eYel7BxfYCkpGU7hv4A");
 const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
 export function registerRoutes(app: Express) {
@@ -24,10 +24,12 @@ export function registerRoutes(app: Express) {
 
     try {
       const chat = model.startChat({
-        history: (await storage.getMessages()).map(msg => ({
-          role: msg.role,
-          parts: [msg.content],
-        })),
+        history: (await storage.getMessages())
+          .reverse() // Get messages in chronological order
+          .map(msg => ({
+            role: msg.role === "user" ? "user" : "model",
+            parts: msg.content,
+          })),
       });
 
       const response = await chat.sendMessage(userMessage.content);
