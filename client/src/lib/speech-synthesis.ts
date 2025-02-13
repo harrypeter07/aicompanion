@@ -1,30 +1,39 @@
+
 export function speakText(text: string): void {
   if ('speechSynthesis' in window) {
     // Cancel any ongoing speech
     window.speechSynthesis.cancel();
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    // Split text into sentences or chunks
+    const chunks = text.match(/[^.!?]+[.!?]+/g) || [text];
 
-    // Configure speech parameters
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    utterance.volume = 1.0;
+    chunks.forEach((chunk, index) => {
+      const utterance = new SpeechSynthesisUtterance(chunk);
 
-    // Use a more natural voice if available
-    const voices = window.speechSynthesis.getVoices();
-    const englishVoice = voices.find(voice => 
-      voice.lang.startsWith('en') && voice.name.includes('Google')
-    );
-    if (englishVoice) {
-      utterance.voice = englishVoice;
-    }
+      // Configure speech parameters
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
 
-    // Add error handling
-    utterance.onerror = (event) => {
-      console.error('Speech synthesis error:', event);
-    };
+      // Use a more natural voice if available
+      const voices = window.speechSynthesis.getVoices();
+      const englishVoice = voices.find(voice => 
+        voice.lang.startsWith('en') && voice.name.includes('Google')
+      );
+      if (englishVoice) {
+        utterance.voice = englishVoice;
+      }
 
-    window.speechSynthesis.speak(utterance);
+      // Add error handling
+      utterance.onerror = (event) => {
+        console.error('Speech synthesis error:', event);
+      };
+
+      // Queue the chunk with a slight delay between chunks
+      setTimeout(() => {
+        window.speechSynthesis.speak(utterance);
+      }, index * 100);
+    });
   } else {
     console.warn('Speech synthesis not supported in this browser');
   }
