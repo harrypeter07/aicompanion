@@ -26,7 +26,7 @@ export function registerRoutes(app: Express) {
       const chat = model.startChat({
         history: (await storage.getMessages()).map(msg => ({
           role: msg.role,
-          parts: msg.content,
+          parts: [msg.content],
         })),
       });
 
