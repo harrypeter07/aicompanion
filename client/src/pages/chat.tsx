@@ -88,7 +88,7 @@ export default function ChatPage() {
       <header ref={headerRef} className="border-b px-4 py-3 flex justify-between items-center">
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-semibold text-primary">AI Companion</h1>
-          {user && <span className="text-sm text-muted-foreground">Welcome, {user.username}</span>}
+          {user && <span className="text-sm text-muted-foreground">Your Personal AI Assistant, {user.username}</span>}
         </div>
         <div className="flex items-center gap-2">
           <Button

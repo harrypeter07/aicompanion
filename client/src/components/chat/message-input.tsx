@@ -22,13 +22,13 @@ export default function MessageInput({ onSend, disabled }: MessageInputProps) {
   return (
     <div className="flex gap-2">
       <VoiceButton onTranscript={(text) => onSend(text)} disabled={disabled} />
-      
+
       <div className="flex-1 flex gap-2">
         <Textarea
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Type a message..."
-          className="min-h-[52px] max-h-32"
+          className="min-h-[52px] max-h-32 flex-1 resize-none bg-transparent px-4 py-[1.3rem] focus-within:outline-none text-lg placeholder:text-muted-foreground/50"
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
@@ -36,7 +36,7 @@ export default function MessageInput({ onSend, disabled }: MessageInputProps) {
             }
           }}
         />
-        
+
         <Button
           size="icon"
           onClick={handleSubmit}
